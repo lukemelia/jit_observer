@@ -1,0 +1,55 @@
+=== JitObserver
+
+* http://github.com/lukemelia/jit_observer
+
+=== Description
+
+Rails plugin to provide an alternative to ActiveRecord::Observer that does not force immediate loads of the observed
+models.
+
+=== Synopsis
+
+In a Rails application with lots of observers and models, boot time can be unnecessarily slowed due to the implementation of ActiveRecord::Observer. AR::Observer resolves the class names of models its instances observe and loads them.
+
+JitObserver does not immediately resolve the observed classes, but instead registers the observer and then attaches it when the observed class is first loaded. (This is accomplished by adding a inherited hook to the Observable module).
+
+== Usage
+
+Specify the observed class as a string or symbol. (Specifying the observed class as a constant will work but negate the just-in-time aspect of JitObserver since it will result in an immediate load of the model)
+
+ class AnotherObserver < JitObserver
+   observe :foo, :bar
+   
+   def after_create
+     ...
+   end
+ end
+ 
+ class AnotherObserver < JitObserver
+   observe :foo, :bar
+   
+   def after_create
+     ...
+   end
+ end
+
+Specifying observed class name implicitly via the name of the observer class is supported. For example, the following will observe the Foo class:
+ 
+ class FooObserver < JitObserver
+   def after_create
+     ...
+   end
+ end
+
+Configuring observers in environment.rb is unchanged from standard observers. I use:
+
+ config.active_record.observers = Dir["#{RAILS_ROOT}/app/observers/**/*.rb"].map do |file|
+   File.expand_path(file).gsub("#{RAILS_ROOT}/app/observers/", "").gsub(/\.rb$/, "")
+ end
+
+You can also use the standard syntax provided in the default environment.rb comments. 
+
+=== Authors
+
+- Maintained by Luke Melia
+- Thanks to Weplay (http://weplay.com) for sponsoring development and supporting open sourcing it from the start
